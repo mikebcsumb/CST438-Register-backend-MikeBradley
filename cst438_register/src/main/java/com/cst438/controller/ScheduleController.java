@@ -42,7 +42,16 @@ public class ScheduleController {
 	@Autowired
 	GradebookService gradebookService;
 	
-	
+	/*
+	 * return example data to make sure all parts are connected.
+	 */
+	@GetMapping("/allStudents")
+	public String getAllStudents() {
+		System.out.println("getAllStudents called");
+		Iterable<Student> allStudents = studentRepository.findAll();
+		return allStudents.toString();
+	}
+		
 	/*
 	 * get current schedule for student.
 	 */
@@ -115,6 +124,35 @@ public class ScheduleController {
 			// something is not right with the enrollment.  
 			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "Enrollment_id invalid. "+enrollment_id);
 		}
+	}
+	
+	@PostMapping("/student")
+	@Transactional
+	public ScheduleDTO addStudent( @RequestBody ScheduleDTO studentDTO  ) { 
+		
+		Student student = studentRepository.findByEmail(studentDTO.student_email);
+		
+		// student.status
+		// = 0  ok to register
+		// != 0 hold on registration.  student.status may have reason for hold.
+		
+		if (student == null) {
+
+			Student student = new Student();
+			student.setEmail(studentDTO.student_email);
+			student.setName(studentDTO.)
+			student.setYear(course.getYear());
+			student.setSemester(course.getSemester());
+			Student savedStudent = studentRepository.save(student);
+			
+			//gradebookService.enrollStudent(student_email, student.getName(), course.getCourse_id());
+			
+			ScheduleDTO.CourseDTO result = createCourseDTO(savedEnrollment);
+			return result;
+		} else {
+			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "Course_id invalid or student not allowed to register for the course.  "+courseDTO.course_id);
+		}
+		
 	}
 	
 	/* 
