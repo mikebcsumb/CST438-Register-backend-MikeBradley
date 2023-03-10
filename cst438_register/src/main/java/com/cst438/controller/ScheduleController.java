@@ -22,6 +22,7 @@ import com.cst438.domain.Enrollment;
 import com.cst438.domain.EnrollmentRepository;
 import com.cst438.domain.ScheduleDTO;
 import com.cst438.domain.Student;
+import com.cst438.domain.StudentDTO;
 import com.cst438.domain.StudentRepository;
 import com.cst438.service.GradebookService;
 
@@ -126,31 +127,51 @@ public class ScheduleController {
 		}
 	}
 	
-	@PostMapping("/student")
+	@PostMapping("/student/change")
 	@Transactional
-	public ScheduleDTO addStudent( @RequestBody ScheduleDTO studentDTO  ) { 
+	public void changeStudent( @RequestBody StudentDTO studentDTO ) { 
 		
-		Student student = studentRepository.findByEmail(studentDTO.student_email);
+		Student student = studentRepository.findByEmail(studentDTO.studentEmail);
 		
 		// student.status
-		// = 0  ok to register
+		// = 0   to register
+		// != 0 hold on registration.  student.status may have reason for hold.
+		
+		if (student != null) {
+
+			student.setStatusCode(studentDTO.statusCode);
+			studentRepository.save(student);
+			
+			//gradebookService.enrollStudent(student_email, student.getName(), course.getCourse_id());
+
+		} else {
+			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "StudentEmail does not exist.");
+		}
+	}
+	
+	@PostMapping("/addStudent")
+	@Transactional
+	public StudentDTO addStudent( @RequestBody StudentDTO studentDTO ) { 
+		
+		Student student = studentRepository.findByEmail(studentDTO.studentEmail);
+		
+		// student.status
+		// = 0   to register
 		// != 0 hold on registration.  student.status may have reason for hold.
 		
 		if (student == null) {
 
-			Student student = new Student();
-			student.setEmail(studentDTO.student_email);
-			student.setName(studentDTO.)
-			student.setYear(course.getYear());
-			student.setSemester(course.getSemester());
+			student = new Student();
+			student.setEmail(studentDTO.studentEmail);
+			student.setName(studentDTO.studentName);
 			Student savedStudent = studentRepository.save(student);
 			
 			//gradebookService.enrollStudent(student_email, student.getName(), course.getCourse_id());
 			
-			ScheduleDTO.CourseDTO result = createCourseDTO(savedEnrollment);
+			StudentDTO result = createStudentDTO(savedStudent);
 			return result;
 		} else {
-			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "Course_id invalid or student not allowed to register for the course.  "+courseDTO.course_id);
+			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "StudentEmail exists already.  "+ studentDTO.id);
 		}
 		
 	}
@@ -191,6 +212,14 @@ public class ScheduleController {
 		courseDTO.title = c.getTitle();
 		courseDTO.grade = e.getCourseGrade();
 		return courseDTO;
+	}
+	
+	private StudentDTO createStudentDTO(Student e) {
+		StudentDTO studentDTO = new StudentDTO();
+		studentDTO.id =e.getStudent_id();
+		studentDTO.studentName = e.getName();
+		studentDTO.studentEmail = e.getEmail();
+		return studentDTO;
 	}
 	
 }
