@@ -171,9 +171,25 @@ public class ScheduleController {
 			StudentDTO result = createStudentDTO(savedStudent);
 			return result;
 		} else {
-			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "StudentEmail exists already.  "+ studentDTO.id);
+			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "StudentEmail exists already.  "+ studentDTO.studentEmail);
 		}
 		
+	}
+	
+	@DeleteMapping("/student/{student_id}")
+	@Transactional
+	public void deleteStudent(  @PathVariable int student_id  ) {
+		
+		Student student = studentRepository.findById(student_id); // student found by id
+		
+		// verify that student exists.
+		if (student!=null ) {
+			// OK.  delete the student
+			studentRepository.delete(student);
+		} else {
+			// no student was found 
+			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "Student_id invalid. "+ student_id);
+		}
 	}
 	
 	/* 
