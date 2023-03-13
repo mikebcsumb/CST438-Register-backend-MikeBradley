@@ -80,54 +80,55 @@ public class JunitTestStudent {
 	@Autowired
 	private MockMvc mvc;
 
-//	@Test
-//	public void addStudent()  throws Exception {
-//		
-//		MockHttpServletResponse response;
-//		
-//		Student student = new Student();
-//		student.setEmail("testemail@csumb.edu");
-//		student.setName(TEST_STUDENT_NAME);
-//		student.setStatusCode(0);
-//		//student.setStudent_id(TEST_STUDENT_ID);
-//		
-//		// given  -- stubs for database repositories that return test data
-//	    given(studentRepository.findByEmail("testemail@csumb.edu")).willReturn(student);
-//	    
-//	    // create the DTO (data transfer object) for the student to add. 
-//		StudentDTO studentDTO = new StudentDTO();
-//		studentDTO.studentEmail = TEST_STUDENT_EMAIL;
-//		studentDTO.studentName = TEST_STUDENT_NAME;
-//		//studentDTO.id = TEST_STUDENT_ID;
-//		
-//		// then do an http post request with body of studentDTO as JSON
-//		response = mvc.perform(
-//				MockMvcRequestBuilders
-//			      .post("/addStudent")
-//			      .content(asJsonString(studentDTO))
-//			      .contentType(MediaType.APPLICATION_JSON)
-//			      .accept(MediaType.APPLICATION_JSON))
-//				.andReturn().getResponse();
-//		
-//		// verify that return status = OK (value 200) 
-//		assertEquals(200, response.getStatus());
-//		
-//		// verify that returned data has non zero primary key
-//		StudentDTO result = fromJsonString(response.getContentAsString(), StudentDTO.class);
+	@Test
+	public void addStudent()  throws Exception {
+		
+		MockHttpServletResponse response;
+		
+		Student student = new Student();
+		student.setEmail(TEST_STUDENT_EMAIL);
+		student.setName(TEST_STUDENT_NAME);
+		//student.setStatusCode(0);
+		//student.setStudent_id(0);
+		
+		// given  -- stubs for database repositories that return test data
+	    //given(studentRepository.findByEmail("test@csumb.edu")).willReturn(student);
+	    
+	    // create the DTO (data transfer object) for the student to add. 
+		StudentDTO studentDTO = new StudentDTO();
+		studentDTO.studentEmail = TEST_STUDENT_EMAIL;
+		studentDTO.studentName = TEST_STUDENT_NAME;
+		studentDTO.id = 0;
+		
+		// then do an http post request with body of studentDTO as JSON
+		response = mvc.perform(
+				MockMvcRequestBuilders
+			      .post("/addStudent")
+			      .content("{\"studentEmail\": \"temptest@csumb.edu\", \"studentName\": \"test4\" }")
+			      .contentType(MediaType.APPLICATION_JSON)
+			      .accept(MediaType.APPLICATION_JSON))
+				.andReturn().getResponse();
+		
+		// verify that return status = OK (value 200) 
+		assertEquals(200, response.getStatus());
+		
+		// verify that returned data has non zero primary key
+		StudentDTO result = fromJsonString(response.getContentAsString(), StudentDTO.class);
 //		assertNotEquals( 0  , result.id);	
-//		
-//		// verify that student is in database 
-//		
+		
+		// verify that student is in database 
+		
 //		boolean found = false;	
-//		Student addedStudent = studentRepository.findByEmail(TEST_STUDENT_EMAIL);
+//		//Student addedStudent = studentRepository.findByEmail(TEST_STUDENT_EMAIL);
 //			if (addedStudent.getEmail().equals(TEST_STUDENT_EMAIL)) {
 //				found = true;
 //			}
-//		assertEquals(true, found, "Added student not in updated database.");
-//		
-//		// delete student.
-//		studentRepository.delete(addedStudent);
-//	}
+		//StudentDTO result = fromJsonString(response.getContentAsString(), ScheduleDTO.CourseDTO.class);
+		assertEquals(result.studentEmail, TEST_STUDENT_EMAIL);
+		
+		// delete student.
+		//studentRepository.delete(addedStudent);
+	}
 	
 	@Test
 	public void changeStudent()  throws Exception {
@@ -135,8 +136,16 @@ public class JunitTestStudent {
 		MockHttpServletResponse response;
 
 		StudentDTO studentDTO = new StudentDTO();
-		studentDTO.studentEmail = TEST_STUDENT_EMAIL_EDIT;
+		studentDTO.studentEmail = TEST_STUDENT_EMAIL;
 		studentDTO.statusCode = 99;
+		
+		Student student = new Student();
+		student.setEmail(TEST_STUDENT_EMAIL);
+		student.setName(TEST_STUDENT_NAME);
+		student.setStatusCode(99);
+		
+	    given(studentRepository.findByEmail(TEST_STUDENT_EMAIL)).willReturn(student);
+
 		
 	    //   Because it is a method that has a void return type, Mockito will mock it automatically.
 	  
@@ -150,19 +159,14 @@ public class JunitTestStudent {
 				.andReturn().getResponse();
 		
 		// verify that return status = OK (value 200) 
-		//assertEquals(200, response.getStatus());
+		assertEquals(200, response.getStatus());
 		
-		
-		boolean found = false;	
-		Student student = studentRepository.findByEmail(TEST_STUDENT_EMAIL_EDIT);
-			if (student.getStatusCode() == 99) {
-				found = true;
-			}
-		assertEquals(true, found, "Student has different status code.");
+		StudentDTO result = fromJsonString(response.getContentAsString(), StudentDTO.class);
+		assertEquals(result.statusCode, 99);
 		
 		//return status code to 0;
-		student.setStatusCode(0);
-		studentRepository.save(student);
+		//student.setStatusCode(0);
+		//studentRepository.save(student);
 		
 	}
 		

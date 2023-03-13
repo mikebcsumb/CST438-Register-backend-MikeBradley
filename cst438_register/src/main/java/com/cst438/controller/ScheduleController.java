@@ -129,7 +129,7 @@ public class ScheduleController {
 	
 	@PostMapping("/student/change")
 	@Transactional
-	public void changeStudent( @RequestBody StudentDTO studentDTO ) { 
+	public StudentDTO changeStudent( @RequestBody StudentDTO studentDTO ) { 
 		
 		Student student = studentRepository.findByEmail(studentDTO.studentEmail);
 		
@@ -141,9 +141,8 @@ public class ScheduleController {
 
 			student.setStatusCode(studentDTO.statusCode);
 			studentRepository.save(student);
-			
-			//gradebookService.enrollStudent(student_email, student.getName(), course.getCourse_id());
-
+			StudentDTO result = createStudentDTO(student);
+			return result;
 		} else {
 			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "StudentEmail does not exist.");
 		}
@@ -164,11 +163,11 @@ public class ScheduleController {
 			student = new Student();
 			student.setEmail(studentDTO.studentEmail);
 			student.setName(studentDTO.studentName);
-			Student savedStudent = studentRepository.save(student);
+			studentRepository.save(student);
 			
 			//gradebookService.enrollStudent(student_email, student.getName(), course.getCourse_id());
 			
-			StudentDTO result = createStudentDTO(savedStudent);
+			StudentDTO result = createStudentDTO(student);
 			return result;
 		} else {
 			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "StudentEmail exists already.  "+ studentDTO.studentEmail);
@@ -235,6 +234,7 @@ public class ScheduleController {
 		studentDTO.id =e.getStudent_id();
 		studentDTO.studentName = e.getName();
 		studentDTO.studentEmail = e.getEmail();
+		studentDTO.statusCode = e.getStatusCode();
 		return studentDTO;
 	}
 	
