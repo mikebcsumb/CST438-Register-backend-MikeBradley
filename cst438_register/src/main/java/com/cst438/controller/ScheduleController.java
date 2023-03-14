@@ -22,6 +22,7 @@ import com.cst438.domain.Enrollment;
 import com.cst438.domain.EnrollmentRepository;
 import com.cst438.domain.ScheduleDTO;
 import com.cst438.domain.Student;
+import com.cst438.domain.StudentDTO;
 import com.cst438.domain.StudentRepository;
 import com.cst438.service.GradebookService;
 
@@ -42,7 +43,16 @@ public class ScheduleController {
 	@Autowired
 	GradebookService gradebookService;
 	
-	
+	/*
+	 * return example data to make sure all parts are connected.
+	 */
+	@GetMapping("/allStudents")
+	public String getAllStudents() {
+		System.out.println("getAllStudents called");
+		Iterable<Student> allStudents = studentRepository.findAll();
+		return allStudents.toString();
+	}
+		
 	/*
 	 * get current schedule for student.
 	 */
@@ -117,6 +127,70 @@ public class ScheduleController {
 		}
 	}
 	
+	@PostMapping("/student/change")
+	@Transactional
+	public StudentDTO changeStudent( @RequestBody StudentDTO studentDTO ) { 
+		
+		Student student = studentRepository.findByEmail(studentDTO.studentEmail);
+		
+		// student.status
+		// = 0   to register
+		// != 0 hold on registration.  student.status may have reason for hold.
+		
+		if (student != null) {
+
+			student.setStatusCode(studentDTO.statusCode);
+			studentRepository.save(student);
+			StudentDTO result = createStudentDTO(student);
+			return result;
+		} else {
+			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "StudentEmail does not exist.");
+		}
+	}
+	
+	@PostMapping("/addStudent")
+	@Transactional
+	public StudentDTO addStudent( @RequestBody StudentDTO studentDTO ) { 
+		
+		Student student = studentRepository.findByEmail(studentDTO.studentEmail);
+		
+		// student.status
+		// = 0   to register
+		// != 0 hold on registration.  student.status may have reason for hold.
+		
+		if (student == null) {
+
+			student = new Student();
+			student.setEmail(studentDTO.studentEmail);
+			student.setName(studentDTO.studentName);
+			studentRepository.save(student);
+			
+			//gradebookService.enrollStudent(student_email, student.getName(), course.getCourse_id());
+			
+			StudentDTO result = createStudentDTO(student);
+			return result;
+		} else {
+			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "StudentEmail exists already.  "+ studentDTO.studentEmail);
+		}
+		
+	}
+	
+	@DeleteMapping("/student/{student_id}")
+	@Transactional
+	public void deleteStudent(  @PathVariable int student_id  ) {
+		
+		Student student = studentRepository.findById(student_id); // student found by id
+		
+		// verify that student exists.
+		if (student!=null ) {
+			// OK.  delete the student
+			studentRepository.delete(student);
+		} else {
+			// no student was found 
+			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "Student_id invalid. "+ student_id);
+		}
+	}
+	
 	/* 
 	 * helper method to transform course, enrollment, student entities into 
 	 * a an instance of ScheduleDTO to return to front end.
@@ -153,6 +227,15 @@ public class ScheduleController {
 		courseDTO.title = c.getTitle();
 		courseDTO.grade = e.getCourseGrade();
 		return courseDTO;
+	}
+	
+	private StudentDTO createStudentDTO(Student e) {
+		StudentDTO studentDTO = new StudentDTO();
+		studentDTO.id =e.getStudent_id();
+		studentDTO.studentName = e.getName();
+		studentDTO.studentEmail = e.getEmail();
+		studentDTO.statusCode = e.getStatusCode();
+		return studentDTO;
 	}
 	
 }
