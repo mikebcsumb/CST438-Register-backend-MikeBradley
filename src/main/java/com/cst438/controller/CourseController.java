@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cst438.domain.CourseDTOG;
 import com.cst438.domain.Enrollment;
 import com.cst438.domain.EnrollmentRepository;
+import java.util.List;
 
 @RestController
 public class CourseController {
@@ -25,7 +26,11 @@ public class CourseController {
 	public void updateCourseGrades( @RequestBody CourseDTOG courseDTO, @PathVariable("course_id") int course_id) {
 		
 		//TODO  complete this method in homework 4
-		
+		for (CourseDTOG.GradeDTO gradeDTO : courseDTO.grades) {
+			Enrollment e = enrollmentRepository.findByEmailAndCourseId(gradeDTO.student_email, course_id);
+			e.setCourseGrade(gradeDTO.grade);
+			enrollmentRepository.save(e);
+		}
 	}
 
 }
